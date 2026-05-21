@@ -2,19 +2,23 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 
 // Public Pages
 import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import CheckEmail from "./pages/CheckEmail";
 import Unauthorized from "./pages/Unauthorized";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 
+import OAuthCallback from "./pages/OAuthCallback";
 
 
 // Dashboards
 import CustomerDashboard from "./pages/customer/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import MediatorDashboard from "./pages/mediator/Dashboard";
-import SupplierDashboard from "./pages/supplier/Dashboard";
+import SupplierDashboard from "./pages/admin/StockRequestVerification";
 
 // Admin Layout (wraps admin pages with sidebar)
 import AdminLayout from "./components/AdminLayout";
@@ -28,10 +32,10 @@ import CustomOrder from "./pages/admin/customOrder";
 import TradeVerification from "./pages/admin/TradeVerification";
 import PurchaseRecords from "./pages/admin/PurchaseRecords";
 import TradingHistory from "./pages/admin/TradingHistory";
-import Analytics from "./pages/admin/Analytics";
 import UserManagement from "./pages/admin/UserManagement";
 import ActivityLogs from "./pages/admin/ActivityLogs";
 import Profile from "./pages/admin/Profile";
+import StockRequestVerification from "./pages/admin/StockRequestVerification";
 
 
 // Admin Product CRUD
@@ -46,7 +50,7 @@ function AppContent() {
   const location = useLocation();
 
   // Navbar visible only on these public routes
-  const navbarRoutes = ["/", "/login", "/register"];
+  const navbarRoutes = ["/", "/about", "/contact", "/login", "/register", "/check-email"];
   const showNavbar = navbarRoutes.includes(location.pathname);
 
   return (
@@ -62,9 +66,13 @@ function AppContent() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/check-email" element={<CheckEmail />} />
         </Route>
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Dashboard routes (without AdminLayout - direct access) */}
@@ -75,11 +83,10 @@ function AppContent() {
           <Route path="/mediator/dashboard" element={<MediatorDashboard />} />
         </Route>        
         
-        <Route element={<ProtectedRoute allowedRoles={["ROLE_SUPPLIER"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["ROLE_SUPPLIER", "ROLE_ADMIN"]} />}>
           <Route path="/supplier/dashboard" element={<SupplierDashboard />} />
         </Route>
-        {/* Admin routes with shared sidebar layout */}
-// Admin routes with shared sidebar layout - now accessible by both ADMIN and STAFF
+        {/* Admin routes with shared sidebar layout — ADMIN and STAFF */}
         <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_STAFF']} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
@@ -90,7 +97,6 @@ function AppContent() {
             <Route path="groups" element={<GroupsManagement />} />
             <Route path="suppliers" element={<SupplierManagement />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="analytics" element={<Analytics />} />
             {/* Admin-only routes */}
             <Route path="inventory" element={<Inventory />} />
             <Route path="custom-order" element={<CustomOrder />} />
@@ -99,6 +105,7 @@ function AppContent() {
             <Route path="trading" element={<TradingHistory />} />
             <Route path="userManagement" element={<UserManagement />} />
             <Route path="ActivityLogs" element={<ActivityLogs />} />
+            <Route path="stock-request-verification" element={<StockRequestVerification />} />
           </Route>
         </Route>
 
