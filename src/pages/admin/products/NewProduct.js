@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Sparkles, Building2, Users, Upload, X } from 'lucide-react';
 
@@ -23,7 +24,7 @@ const NewProduct = () => {
       try {
         const token = localStorage.getItem('token') || 'dummy-token';
         
-        const groupsRes = await fetch('http://127.0.0.1:8000/api/groups', {
+        const groupsRes = await fetch(`${API_BASE_URL}/api/groups`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -109,7 +110,7 @@ const NewProduct = () => {
         formData.append('image', imageFile);
       }
       
-      const res = await fetch('http://127.0.0.1:8000/api/products', {
+      const res = await fetch(`${API_BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -127,7 +128,7 @@ const NewProduct = () => {
       // Log activity to activity logs
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        await fetch('http://127.0.0.1:8000/api/activity-logs/create', {
+        await fetch(`${API_BASE_URL}/api/activity-logs/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

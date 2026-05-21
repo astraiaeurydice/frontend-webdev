@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, TrendingUp, Home, User, Search, Heart, Plus, Send, X, MessageSquare, Clock, CheckCircle, XCircle, Package, ArrowRightLeft, LogOut } from 'lucide-react';
+import CartSection from '../../components/customer/CartSection';
+import OrderHistory from '../../components/customer/OrderHistory';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -17,8 +20,34 @@ const UserDashboard = () => {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [cart, setCart] = useState([]);
 
-  const API_URL = 'http://127.0.0.1:8000/api';
+  
+  const getProductImage = (product) => assetUrl(product?.image);
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === product.id);
+      if (existing) {
+        return prev.map((i) => (i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i));
+      }
+      return [
+        ...prev,
+        {
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          quantity: 1,
+          image: getProductImage(product),
+        },
+      ];
+    });
+  };
+
+  const buyNow = (product) => {
+    addToCart(product);
+    setCurrentPage('cart');
+  };
 
   // Fetch products from backend
   useEffect(() => {
@@ -319,6 +348,7 @@ const UserDashboard = () => {
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'ecommerce', label: 'E-Commerce', icon: ShoppingCart },
+    { id: 'orders', label: 'My Orders', icon: Package },
     { id: 'trading', label: 'Trading', icon: TrendingUp },
     { id: 'profile', label: 'Profile', icon: User }
   ];
@@ -395,11 +425,17 @@ const UserDashboard = () => {
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Heart size={24} className="text-gray-600" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+              <button
+                type="button"
+                onClick={() => setCurrentPage('cart')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+              >
                 <ShoppingCart size={24} className="text-gray-600" />
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
+                {cart.length > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cart.reduce((n, i) => n + i.quantity, 0)}
+                  </span>
+                )}
               </button>
               <button
                 onClick={handleLogout}
@@ -469,6 +505,12 @@ const UserDashboard = () => {
           </div>
         )}
 
+        {currentPage === 'cart' && (
+          <CartSection cart={cart} setCart={setCart} onBack={() => setCurrentPage('ecommerce')} />
+        )}
+
+        {currentPage === 'orders' && <OrderHistory />}
+
         {currentPage === 'ecommerce' && (
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -522,10 +564,18 @@ const UserDashboard = () => {
                         ₱{product.price}
                       </p>
                       <div className="mt-auto space-y-2">
-                        <button className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2 rounded-lg hover:shadow-lg transition-all font-medium">
+                        <button
+                          type="button"
+                          onClick={() => buyNow(product)}
+                          className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white py-2 rounded-lg hover:shadow-lg transition-all font-medium"
+                        >
                           Buy Now
                         </button>
-                        <button className="w-full border-2 border-cyan-500 text-cyan-600 py-2 rounded-lg hover:bg-cyan-50 transition-all font-medium">
+                        <button
+                          type="button"
+                          onClick={() => addToCart(product)}
+                          className="w-full border-2 border-cyan-500 text-cyan-600 py-2 rounded-lg hover:bg-cyan-50 transition-all font-medium"
+                        >
                           Add to Cart
                         </button>
                       </div>

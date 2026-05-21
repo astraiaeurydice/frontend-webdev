@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../config/api';
 // src/hooks/useAuth.js
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +20,7 @@ export const useAuth = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/user/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

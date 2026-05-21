@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, ShieldCheck, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 
 function Home() {
+const location = useLocation();
 const [currentFeature, setCurrentFeature] = useState(0);
 const [isVisible, setIsVisible] = useState(false);
 const [currentIndex, setCurrentIndex] = useState(0);
-const [showAll, setShowAll] = useState(false); 
+const [showAll, setShowAll] = useState(false);
 
 const totalSlides = 12;      
 const itemsPerPage = 4;      
@@ -47,6 +48,16 @@ const features = [
     }, 3000);
     return () => clearInterval(interval);
   }, [features.length]);
+
+  useEffect(() => {
+    const scrollTo = location.state?.scrollTo;
+    if (!scrollTo || typeof scrollTo !== 'string') return;
+    const run = () => {
+      document.getElementById(scrollTo)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    const t = window.setTimeout(run, 80);
+    return () => clearTimeout(t);
+  }, [location.pathname, location.state]);
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
@@ -458,46 +469,6 @@ const features = [
 
         </div>
 
-        {/* About Section */}
-<section id="about" className="mt-24 max-w-5xl mx-auto px-6 text-center">
-  <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400 bg-clip-text text-transparent">
-    About Us
-  </h2>
-  <p className="text-gray-300 text-lg leading-relaxed max-w-3xl mx-auto">
-    K-Dream Merchandise is your official K-pop merchandise distributor. 
-    We bring fans closer to their idols by providing a trusted platform 
-    to <span className="text-blue-400 font-semibold">buy</span>, 
-    <span className="text-purple-400 font-semibold">sell</span>, and 
-    <span className="text-pink-400 font-semibold">trade</span> authentic items.  
-    Beyond merch, we are a <span className="font-semibold text-white">community</span> where 
-    fandoms unite, friendships form, and collections grow.
-  </p>
-</section>
-
-{/* Vision & Mission Section */}
-<section id="vision-mission" className="mt-20 max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
-  {/* Vision */}
-  <div className="p-8 bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-md border border-white/10 rounded-3xl shadow-lg hover:scale-105 transition-transform duration-500">
-    <h3 className="text-2xl font-bold text-white mb-4">Our Vision</h3>
-    <p className="text-gray-300 leading-relaxed">
-      To be the world’s most trusted hub for K-pop fans, where passion, 
-      authenticity, and community meet. We aim to make every fan feel 
-      closer to their idols and to each other.
-    </p>
-  </div>
-
-  {/* Mission */}
-  <div className="p-8 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-md border border-white/10 rounded-3xl shadow-lg hover:scale-105 transition-transform duration-500">
-    <h3 className="text-2xl font-bold text-white mb-4">Our Mission</h3>
-    <p className="text-gray-300 leading-relaxed">
-      To provide safe and seamless trading, empower fandom groups, 
-      and ensure every piece of merchandise is 100% authentic. 
-      Our mission is to create a global family of K-pop enthusiasts 
-      supporting one another.
-    </p>
-  </div>
-</section>
-
 {/* Join Community CTA */}
 <section id="community" className="mt-24 text-center">
   <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Be Part of Our Community</h2>
@@ -589,7 +560,7 @@ const features = [
                 <li><button className="text-gray-400 hover:text-white transition-colors text-sm">Trading Guidelines</button></li>
                 <li><button className="text-gray-400 hover:text-white transition-colors text-sm">Authentication</button></li>
                 <li><button className="text-gray-400 hover:text-white transition-colors text-sm">Payment Help</button></li>
-                <li><button className="text-gray-400 hover:text-white transition-colors text-sm">Contact Us</button></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Contact Us</Link></li>
                 <li><button className="text-gray-400 hover:text-white transition-colors text-sm">FAQ</button></li>
               </ul>
             </div>

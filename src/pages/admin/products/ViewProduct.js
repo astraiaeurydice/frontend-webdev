@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Package, Users, Building2, Tag, Box, Edit, Eye } from 'lucide-react';
@@ -13,7 +14,7 @@ const ViewProduct = () => {
     const fetchProduct = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -94,7 +95,7 @@ const ViewProduct = () => {
                 </label>
                 <div className="w-full h-80 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200">
                   <img
-                    src={`http://127.0.0.1:8000${product.image}`}
+                    src={`${API_BASE_URL}${product.image}`}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

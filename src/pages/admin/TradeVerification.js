@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
@@ -32,7 +33,7 @@ const TradeVerification = () => {
     rejected: 0
   });
 
-  const API_URL = 'http://127.0.0.1:8000/api/admin/trades';
+  const TRADES_API = `${API_BASE_URL}/api/admin/trades`;
 
   useEffect(() => {
     fetchTransactions();
@@ -55,8 +56,8 @@ const TradeVerification = () => {
       }
 
       const endpoint = statusFilter === 'all' 
-        ? `${API_URL}/transactions`
-        : `${API_URL}/transactions?status=${statusFilter}`;
+        ? `${TRADES_API}/transactions`
+        : `${TRADES_API}/transactions?status=${statusFilter}`;
 
       const response = await fetch(endpoint, {
         headers: {
@@ -94,7 +95,7 @@ const TradeVerification = () => {
       
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/statistics`, {
+      const response = await fetch(`${TRADES_API}/statistics`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -143,7 +144,7 @@ const TradeVerification = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${API_URL}/transactions/${selectedTransaction.id}/verify`, {
+      const response = await fetch(`${TRADES_API}/transactions/${selectedTransaction.id}/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
@@ -186,7 +187,7 @@ const TradeVerification = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${API_URL}/transactions/${selectedTransaction.id}/reject`, {
+      const response = await fetch(`${TRADES_API}/transactions/${selectedTransaction.id}/reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token.trim()}`,

@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus, Eye, Package } from 'lucide-react';
@@ -12,13 +13,13 @@ const ProductManagement = () => {
   const tableRef = useRef(null);
   const dataTableRef = useRef(null);
 
-  const BASE_URL = 'http://127.0.0.1:8000';
+  
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem('token') || '';
-        const response = await fetch(`${BASE_URL}/api/products`, {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -108,7 +109,7 @@ const ProductManagement = () => {
       const productToDelete = products.find(p => p.id === id);
       const productName = productToDelete ? productToDelete.name : `Product #${id}`;
       
-      const response = await fetch(`${BASE_URL}/api/products/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
         method: 'DELETE',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -124,7 +125,7 @@ const ProductManagement = () => {
       // Log activity to activity logs
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        await fetch('http://127.0.0.1:8000/api/activity-logs/create', {
+        await fetch(`${API_BASE_URL}/api/activity-logs/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -158,7 +159,7 @@ const ProductManagement = () => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return `${BASE_URL}${imagePath}`;
+    return `${API_BASE_URL}${imagePath}`;
   };
 
   const getStatusBadge = (status) => {

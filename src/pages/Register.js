@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../config/api';
 
 import { useState, useEffect, } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -40,7 +41,7 @@ const handleRegister = async (e) => {
   e.preventDefault();
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/register", {
+    const response = await fetch(`${API_BASE_URL}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -60,7 +61,7 @@ const handleRegister = async (e) => {
       return;
     }
 
-    alert("Registration successful! Please log in.");
+    navigate(`/check-email?email=${encodeURIComponent(email)}`, { replace: true });
   } catch (error) {
     alert("Something went wrong. Please try again.");
   }
@@ -76,7 +77,7 @@ const handleRegister = async (e) => {
 
 //     // Simulate login
 //   try {
-//     const response = await fetch("http://127.0.0.1:8000/api/login", {
+//     const response = await fetch(`${API_BASE_URL}/api/login`, {
 //       method: "POST",
 //       headers: { "Content-Type": "application/json" },
 //       body: JSON.stringify({ email, password }),

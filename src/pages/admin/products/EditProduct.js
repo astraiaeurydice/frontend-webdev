@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Save, Building2, Users, Upload, X, Sparkles } from 'lucide-react';
@@ -49,7 +50,7 @@ const EditProduct = () => {
         const token = localStorage.getItem('token');
         
         // Fetch groups
-        const groupsRes = await fetch('http://127.0.0.1:8000/api/groups', {
+        const groupsRes = await fetch(`${API_BASE_URL}/api/groups`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -61,7 +62,7 @@ const EditProduct = () => {
         setLoadingGroups(false);
         
         // Fetch product
-        const res = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -173,7 +174,7 @@ const EditProduct = () => {
         }
         formData.append('image', imageFile);
         
-        response = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+        response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -194,7 +195,7 @@ const EditProduct = () => {
           updateData.stockQuantity = parseInt(product.stockQuantity) || 0;
         }
         
-        response = await fetch(`http://127.0.0.1:8000/api/products/${id}`, {
+        response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -214,7 +215,7 @@ const EditProduct = () => {
       // Log activity to activity logs
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        await fetch('http://127.0.0.1:8000/api/activity-logs/create', {
+        await fetch(`${API_BASE_URL}/api/activity-logs/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -447,7 +448,7 @@ const EditProduct = () => {
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 mb-2 font-medium">Current Image:</p>
                   <img
-                    src={`http://127.0.0.1:8000${existingImage}`}
+                    src={`${API_BASE_URL}${existingImage}`}
                     alt={product.name}
                     className="w-full h-64 object-cover rounded-xl border border-gray-200"
                   />

@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { 
   Package, 
@@ -34,7 +35,7 @@ const Inventory = () => {
     activeProducts: 0
   });
 
-  const API_URL = 'http://127.0.0.1:8000/api/admin/inventory';
+  const INVENTORY_API = `${API_BASE_URL}/api/admin/inventory`;
 
   useEffect(() => {
     fetchProducts();
@@ -61,7 +62,7 @@ const Inventory = () => {
       if (lowStockFilter) params.append('lowStock', 'true');
       if (statusFilter !== 'all') params.append('status', statusFilter);
 
-      const response = await fetch(`${API_URL}/products?${params.toString()}`, {
+      const response = await fetch(`${INVENTORY_API}/products?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -97,7 +98,7 @@ const Inventory = () => {
       
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/statistics`, {
+      const response = await fetch(`${INVENTORY_API}/statistics`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -150,7 +151,7 @@ const Inventory = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${API_URL}/products/${selectedProduct.id}/add-stock`, {
+      const response = await fetch(`${INVENTORY_API}/products/${selectedProduct.id}/add-stock`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
@@ -196,7 +197,7 @@ const Inventory = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${API_URL}/products/${selectedProduct.id}/update-stock`, {
+      const response = await fetch(`${INVENTORY_API}/products/${selectedProduct.id}/update-stock`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
@@ -411,7 +412,7 @@ const Inventory = () => {
                           <div className="flex items-center gap-3">
                             {product.image && (
                               <img 
-                                src={product.image.startsWith('http') ? product.image : `http://127.0.0.1:8000${product.image}`}
+                                src={product.image.startsWith('http') ? product.image : `${API_BASE_URL}${product.image}`}
                                 alt={product.name}
                                 className="w-12 h-12 object-cover rounded-lg"
                                 onError={(e) => { e.target.style.display = 'none'; }}

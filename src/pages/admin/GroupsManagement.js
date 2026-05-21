@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, Building2, Calendar, Search } from 'lucide-react';
 
@@ -25,7 +26,7 @@ const GroupsManagement = () => {
   const fetchGroups = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:8000/api/groups', {
+      const res = await fetch(`${API_BASE_URL}/api/groups`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -42,7 +43,7 @@ const GroupsManagement = () => {
   const fetchSuppliers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:8000/api/suppliers', {
+      const res = await fetch(`${API_BASE_URL}/api/suppliers`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -60,8 +61,8 @@ const GroupsManagement = () => {
     
     try {
       const url = editingGroup 
-        ? `http://127.0.0.1:8000/api/groups/${editingGroup.id}`
-        : 'http://127.0.0.1:8000/api/groups';
+        ? `${API_BASE_URL}/api/groups/${editingGroup.id}`
+        : `${API_BASE_URL}/api/groups`;
       
       const res = await fetch(url, {
         method: editingGroup ? 'PUT' : 'POST',
@@ -102,7 +103,7 @@ const GroupsManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://127.0.0.1:8000/api/groups/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/groups/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

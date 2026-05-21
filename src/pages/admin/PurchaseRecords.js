@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, 
@@ -32,7 +33,7 @@ const PurchaseRecords = () => {
     averageOrderValue: 0
   });
 
-  const API_URL = 'http://127.0.0.1:8000/api/admin/purchase-records';
+  const PURCHASE_API = `${API_BASE_URL}/api/admin/purchase-records`;
 
   useEffect(() => {
     fetchOrders();
@@ -59,7 +60,7 @@ const PurchaseRecords = () => {
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
 
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
+      const response = await fetch(`${PURCHASE_API}?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -95,7 +96,7 @@ const PurchaseRecords = () => {
       
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/statistics`, {
+      const response = await fetch(`${PURCHASE_API}/statistics`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -117,6 +118,8 @@ const PurchaseRecords = () => {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(o => 
+        (o.receiptNumber || '').toLowerCase().includes(searchLower) ||
+        String(o.id).includes(searchLower) ||
         o.customer.username.toLowerCase().includes(searchLower) ||
         o.customer.firstName.toLowerCase().includes(searchLower) ||
         o.customer.lastName.toLowerCase().includes(searchLower) ||
@@ -292,6 +295,7 @@ const PurchaseRecords = () => {
                 <thead className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Order ID</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold">Receipt</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Customer</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Product</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">Quantity</th>
@@ -307,6 +311,9 @@ const PurchaseRecords = () => {
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">
                         #{order.id}
                       </td>
+                      <td className="px-6 py-4 text-sm font-mono text-purple-700">
+                        {order.receiptNumber || '—'}
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-700">
                         <div>
                           <p className="font-medium">{order.customer.username}</p>
@@ -317,7 +324,7 @@ const PurchaseRecords = () => {
                         <div className="flex items-center gap-3">
                           {order.product.image && (
                             <img 
-                              src={order.product.image.startsWith('http') ? order.product.image : `http://127.0.0.1:8000${order.product.image}`}
+                              src={order.product.image.startsWith('http') ? order.product.image : `${API_BASE_URL}${order.product.image}`}
                               alt={order.product.name}
                               className="w-10 h-10 object-cover rounded"
                               onError={(e) => { e.target.style.display = 'none'; }}
@@ -415,7 +422,7 @@ const PurchaseRecords = () => {
                     <div className="flex items-start gap-4">
                       {selectedOrder.product.image && (
                         <img 
-                          src={selectedOrder.product.image.startsWith('http') ? selectedOrder.product.image : `http://127.0.0.1:8000${selectedOrder.product.image}`}
+                          src={selectedOrder.product.image.startsWith('http') ? selectedOrder.product.image : `${API_BASE_URL}${selectedOrder.product.image}`}
                           alt={selectedOrder.product.name}
                           className="w-24 h-24 object-cover rounded-lg"
                           onError={(e) => { e.target.style.display = 'none'; }}

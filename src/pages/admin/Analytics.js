@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
@@ -12,7 +13,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import { 
   TrendingUp, 
   Package, 
@@ -44,7 +45,7 @@ const Analytics = () => {
   const [error, setError] = useState('');
   const [days, setDays] = useState(30);
 
-  const API_URL = 'http://127.0.0.1:8000/api/admin/analytics';
+  const ANALYTICS_API = `${API_BASE_URL}/api/admin/analytics`;
 
   useEffect(() => {
     fetchAnalytics();
@@ -62,7 +63,7 @@ const Analytics = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}?days=${days}`, {
+      const response = await fetch(`${ANALYTICS_API}?days=${days}`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -165,105 +166,6 @@ const Analytics = () => {
     }]
   };
 
-  const productStatusData = {
-    labels: Object.keys(analytics.products.byStatus),
-    datasets: [{
-      data: Object.values(analytics.products.byStatus),
-      backgroundColor: [
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(239, 68, 68, 0.8)',
-      ],
-      borderColor: [
-        'rgb(34, 197, 94)',
-        'rgb(239, 68, 68)',
-      ],
-      borderWidth: 2
-    }]
-  };
-
-  const productCategoryData = {
-    labels: Object.keys(analytics.products.byCategory),
-    datasets: [{
-      data: Object.values(analytics.products.byCategory),
-      backgroundColor: [
-        'rgba(59, 130, 246, 0.8)',
-        'rgba(168, 85, 247, 0.8)',
-        'rgba(236, 72, 153, 0.8)',
-        'rgba(251, 146, 60, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-      ],
-      borderWidth: 2
-    }]
-  };
-
-  const stockLevelsData = {
-    labels: ['In Stock', 'Low Stock', 'Out of Stock'],
-    datasets: [{
-      data: [
-        analytics.products.stockLevels.inStock,
-        analytics.products.stockLevels.lowStock,
-        analytics.products.stockLevels.outOfStock
-      ],
-      backgroundColor: [
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(251, 146, 60, 0.8)',
-        'rgba(239, 68, 68, 0.8)',
-      ],
-      borderWidth: 2
-    }]
-  };
-
-  const orderStatusData = {
-    labels: Object.keys(analytics.orders.byStatus),
-    datasets: [{
-      label: 'Orders',
-      data: Object.values(analytics.orders.byStatus),
-      backgroundColor: 'rgba(168, 85, 247, 0.8)',
-      borderColor: 'rgb(168, 85, 247)',
-      borderWidth: 1
-    }]
-  };
-
-  const userRoleData = {
-    labels: Object.keys(analytics.users.byRole),
-    datasets: [{
-      data: Object.values(analytics.users.byRole),
-      backgroundColor: [
-        'rgba(59, 130, 246, 0.8)',
-        'rgba(168, 85, 247, 0.8)',
-        'rgba(236, 72, 153, 0.8)',
-        'rgba(251, 146, 60, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-      ],
-      borderWidth: 2
-    }]
-  };
-
-  const tradingStatusData = {
-    labels: Object.keys(analytics.trading.byStatus),
-    datasets: [{
-      data: Object.values(analytics.trading.byStatus),
-      backgroundColor: [
-        'rgba(251, 146, 60, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(59, 130, 246, 0.8)',
-        'rgba(239, 68, 68, 0.8)',
-      ],
-      borderWidth: 2
-    }]
-  };
-
-  const activityLogActionData = {
-    labels: Object.keys(analytics.activityLogs.byAction),
-    datasets: [{
-      label: 'Actions',
-      data: Object.values(analytics.activityLogs.byAction),
-      backgroundColor: 'rgba(236, 72, 153, 0.8)',
-      borderColor: 'rgb(236, 72, 153)',
-      borderWidth: 1
-    }]
-  };
-
   const topProductsData = {
     labels: Object.keys(analytics.orders.topProducts).slice(0, 5),
     datasets: [{
@@ -362,50 +264,6 @@ const Analytics = () => {
             </div>
           </div>
 
-          {/* Product Status */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Package className="text-blue-500" size={24} />
-              Products by Status
-            </h2>
-            <div className="h-64">
-              <Doughnut data={productStatusData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Product Categories */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Package className="text-purple-500" size={24} />
-              Products by Category
-            </h2>
-            <div className="h-64">
-              <Pie data={productCategoryData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Stock Levels */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Package className="text-green-500" size={24} />
-              Stock Levels
-            </h2>
-            <div className="h-64">
-              <Doughnut data={stockLevelsData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Order Status */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <ShoppingBag className="text-purple-500" size={24} />
-              Orders by Status
-            </h2>
-            <div className="h-64">
-              <Bar data={orderStatusData} options={chartOptions} />
-            </div>
-          </div>
-
           {/* Top Products */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -416,39 +274,6 @@ const Analytics = () => {
               <Bar data={topProductsData} options={chartOptions} />
             </div>
           </div>
-
-          {/* User Roles */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Users className="text-blue-500" size={24} />
-              Users by Role
-            </h2>
-            <div className="h-64">
-              <Pie data={userRoleData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Trading Status */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <ArrowRightLeft className="text-purple-500" size={24} />
-              Trading Transactions by Status
-            </h2>
-            <div className="h-64">
-              <Doughnut data={tradingStatusData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Activity Log Actions */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Calendar className="text-pink-500" size={24} />
-              Activity Logs by Action
-            </h2>
-            <div className="h-64">
-              <Bar data={activityLogActionData} options={chartOptions} />
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -456,4 +281,3 @@ const Analytics = () => {
 };
 
 export default Analytics;
-

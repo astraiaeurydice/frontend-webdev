@@ -1,16 +1,39 @@
 // src/components/ProtectedRoute.jsx
 import { Navigate, Outlet } from "react-router-dom";
 
+function getStoredRoles() {
+  const raw = localStorage.getItem("roles");
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.map(normalizeRole).filter(Boolean);
+    if (typeof parsed === "string") return parsed.split(",").map(normalizeRole).filter(Boolean);
+    return [];
+  } catch {
+    return raw.split(",").map(normalizeRole).filter(Boolean);
+  }
+}
+
+function normalizeRole(role) {
+  if (role == null) return "";
+  let r = String(role).trim();
+  if (!r) return "";
+  r = r.toUpperCase();
+  if (!r.startsWith("ROLE_")) r = `ROLE_${r}`;
+  return r;
+}
+
 export default function ProtectedRoute({ allowedRoles }) {
   const token = localStorage.getItem("token");
-  const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
+  const userRoles = getStoredRoles();
 
   if (!token) {
     // Not logged in
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.some(role => userRoles.includes(role))) {
+  const allowed = (allowedRoles || []).map(normalizeRole).filter(Boolean);
+  if (allowed.length > 0 && !allowed.some(role => userRoles.includes(role))) {
     // Logged in but role not allowed
     return <Navigate to="/unauthorized" replace />;
   }

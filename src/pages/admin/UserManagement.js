@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Edit, Trash2, Plus, Users, X, CheckCircle, XCircle, Archive } from 'lucide-react';
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
+import { Edit, Trash2, Plus, Users, X, CheckCircle, XCircle, Archive, Mail } from 'lucide-react';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
@@ -22,15 +23,13 @@ export default function UserManagement() {
     lastName: '',
     phoneNumber: '',
     password: '',
-    roles: []
+    roles: [],
+    markVerified: false,
+    isVerified: true
   });
 
-  const API_URL = 'http://localhost:8000';
   
-  // Get token from localStorage
-  const getToken = () => {
-    return localStorage.getItem('token') || 'demo-token';
-  };
+  const getToken = () => (localStorage.getItem('token') || '').trim();
 
   const availableRoles = [
     { value: 'ROLE_ADMIN', label: 'Admin' },
@@ -64,7 +63,7 @@ export default function UserManagement() {
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             order: [[0, 'asc']],
             columnDefs: [
-              { orderable: false, targets: [6, 7] }
+              { orderable: false, targets: [5, 8] }
             ],
             language: {
               search: "_INPUT_",
@@ -234,7 +233,7 @@ export default function UserManagement() {
       setLoading(true);
       const token = getToken();
       
-      const response = await fetch(`${API_URL}/api/admin/users`, {
+      const response = await fetch(`${API_URL}/admin/users`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -283,7 +282,9 @@ export default function UserManagement() {
       lastName: '',
       phoneNumber: '+63',
       password: '',
-      roles: []
+      roles: [],
+      markVerified: false,
+      isVerified: true
     });
     setShowModal(true);
     setError('');
@@ -299,7 +300,9 @@ export default function UserManagement() {
       lastName: user.lastName,
       phoneNumber: user.phoneNumber,
       password: '',
-      roles: user.roles.filter(role => role !== 'ROLE_USER')
+      roles: (user.roles || []).filter(role => role !== 'ROLE_USER'),
+      markVerified: false,
+      isVerified: Boolean(user.isVerified)
     });
     setShowModal(true);
     setError('');
@@ -326,8 +329,8 @@ export default function UserManagement() {
 
       const token = getToken();
       const url = editingUser 
-        ? `${API_URL}/api/admin/users/${editingUser.id}`
-        : `${API_URL}/api/admin/users`;
+        ? `${API_URL}/admin/users/${editingUser.id}`
+        : `${API_URL}/admin/users`;
       
       const method = editingUser ? 'PUT' : 'POST';
 
@@ -341,9 +344,14 @@ export default function UserManagement() {
         roles: formData.roles.length > 0 ? formData.roles : []
       };
 
-      // Include password only if it's provided
       if (formData.password) {
         payload.password = formData.password;
+      }
+
+      if (!editingUser) {
+        payload.markVerified = Boolean(formData.markVerified);
+      } else {
+        payload.isVerified = Boolean(formData.isVerified);
       }
 
       const response = await fetch(url, {
@@ -361,7 +369,11 @@ export default function UserManagement() {
       }
 
       const result = await response.json();
-      setSuccess(result.message || (editingUser ? 'User updated successfully!' : 'User created successfully!'));
+      let msg = result.message || (editingUser ? 'User updated successfully!' : 'User created successfully!');
+      if (result.verificationEmailSent === false && !editingUser && !formData.markVerified) {
+        msg += ' Verification email was not sent — check mailer or use Resend verification.';
+      }
+      setSuccess(msg);
       setShowModal(false);
       
       // Destroy DataTable before React updates rows
@@ -394,7 +406,7 @@ export default function UserManagement() {
       const newStatus = statusCycle[currentStatus] || 'active';
       const token = getToken();
 
-      const response = await fetch(`${API_URL}/api/admin/users/${userId}/status`, {
+      const response = await fetch(`${API_URL}/admin/users/${userId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -427,6 +439,39 @@ export default function UserManagement() {
     }
   };
 
+  const handleResendVerification = async (userId) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        setError('Not logged in');
+        return;
+      }
+      const response = await fetch(`${API_URL}/admin/users/${userId}/resend-verification`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to resend verification email');
+      }
+      setSuccess(data.message || 'Verification email sent.');
+      setError('');
+      if (dataTableRef.current) {
+        try {
+          dataTableRef.current.destroy();
+          dataTableRef.current = null;
+        } catch (e) { /* ignore */ }
+      }
+      await fetchUsers();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Resend failed');
+    }
+  };
+
   // Delete user
   const handleDelete = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user?')) {
@@ -436,7 +481,7 @@ export default function UserManagement() {
     try {
       const token = getToken();
       
-      const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -483,6 +528,23 @@ export default function UserManagement() {
         </span>
       );
     });
+  };
+
+  const getVerifiedBadge = (isVerified) => {
+    if (isVerified) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-300">
+          <CheckCircle className="w-3 h-3" />
+          Verified
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border bg-gradient-to-r from-amber-100 to-orange-100 text-amber-900 border-amber-300">
+        <Mail className="w-3 h-3" />
+        Pending
+      </span>
+    );
   };
 
   const getStatusBadge = (status) => {
@@ -589,6 +651,7 @@ export default function UserManagement() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Name</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Phone</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Roles</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Verified</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
                     <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
                   </tr>
@@ -617,6 +680,9 @@ export default function UserManagement() {
                         </div>
                       </td>
                       <td className="px-6 py-3">
+                        {getVerifiedBadge(Boolean(user.isVerified))}
+                      </td>
+                      <td className="px-6 py-3">
                         <button
                           onClick={() => toggleUserStatus(user.id, user.status)}
                           className="hover:scale-105 transition-transform"
@@ -626,7 +692,17 @@ export default function UserManagement() {
                         </button>
                       </td>
                       <td className="px-6 py-3">
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2 justify-center flex-wrap">
+                          {!user.isVerified && (
+                            <button
+                              type="button"
+                              onClick={() => handleResendVerification(user.id)}
+                              className="p-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:shadow-md transition-all"
+                              title="Resend verification email"
+                            >
+                              <Mail className="w-4 h-4" strokeWidth={1.5} />
+                            </button>
+                          )}
                           <button
                             onClick={() => openEditModal(user)}
                             className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:shadow-md transition-all"
@@ -763,6 +839,52 @@ export default function UserManagement() {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-medium text-sm"
                 />
               </div>
+
+              {!editingUser && (
+                <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 bg-gray-50/80 p-4">
+                  <input
+                    type="checkbox"
+                    checked={formData.markVerified}
+                    onChange={(e) => handleInputChange('markVerified', e.target.checked)}
+                    className="mt-1 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">Mark email as verified immediately</span>
+                    <span className="block text-gray-500 mt-1">
+                      If unchecked, the user receives the same verification email as self-registration and must verify before login.
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {editingUser && (
+                <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/80 p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isVerified}
+                      onChange={(e) => handleInputChange('isVerified', e.target.checked)}
+                      className="mt-1 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      <span className="font-semibold text-gray-900">Email verified</span>
+                      <span className="block text-gray-500 mt-1">
+                        Uncheck to require verification again (token is stored server-side only). Changing email in this form will always require re-verification.
+                      </span>
+                    </span>
+                  </label>
+                  {!formData.isVerified && (
+                    <button
+                      type="button"
+                      onClick={() => handleResendVerification(editingUser.id)}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-amber-800 bg-amber-100 border border-amber-200 rounded-lg hover:bg-amber-200 transition-colors"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Resend verification email
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

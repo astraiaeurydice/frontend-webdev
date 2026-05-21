@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Save, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -39,7 +40,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user/profile', {
+        const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -73,7 +74,7 @@ const Profile = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/user/profile/update', {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile/update`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -131,7 +132,7 @@ const Profile = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/user/password/change', {
+      const response = await fetch(`${API_BASE_URL}/api/user/password/change`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

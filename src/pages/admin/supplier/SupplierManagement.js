@@ -1,10 +1,13 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Eye, Edit2, Trash2, Plus, X, Building2 } from 'lucide-react';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
 
-const API_BASE = 'http://localhost:8000/api/suppliers';
+
+
+const SUPPLIERS_API = `${API_URL}/suppliers`;
 
 export default function SupplierManagement() {
   const [suppliers, setSuppliers] = useState([]);
@@ -57,7 +60,7 @@ export default function SupplierManagement() {
 
       console.log('📝 [ACTIVITY LOG] Sending activity log:', activityData);
 
-      const response = await fetch('http://localhost:8000/api/activity-logs/create', {
+      const response = await fetch(`${API_BASE_URL}/api/activity-logs/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -273,7 +276,7 @@ export default function SupplierManagement() {
       console.log('🔵 [SUPPLIER] Fetching suppliers...');
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch(API_BASE, {
+      const res = await fetch(SUPPLIERS_API, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -312,7 +315,7 @@ export default function SupplierManagement() {
     try {
       console.log('👁️ [SUPPLIER] Viewing supplier:', id);
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/${id}`, {
+      const res = await fetch(`${SUPPLIERS_API}/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -339,7 +342,7 @@ export default function SupplierManagement() {
       console.log('✏️ [SUPPLIER] Current User:', userData);
       console.log('✏️ [SUPPLIER] User Role:', userData?.role || 'Unknown');
       
-      const res = await fetch(`${API_BASE}/${id}`, {
+      const res = await fetch(`${SUPPLIERS_API}/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -379,7 +382,7 @@ export default function SupplierManagement() {
       console.log('🗑️ [SUPPLIER] User ID:', userData?.id || 'Unknown');
       console.log('🗑️ [SUPPLIER] Username:', userData?.username || 'Unknown');
       
-      const res = await fetch(`${API_BASE}/${id}`, { 
+      const res = await fetch(`${SUPPLIERS_API}/${id}`, { 
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -437,7 +440,7 @@ export default function SupplierManagement() {
       console.log('➕ [SUPPLIER] User ID:', userData?.id || 'Unknown');
       console.log('➕ [SUPPLIER] Username:', userData?.username || 'Unknown');
       
-      const url = modalMode === 'add' ? API_BASE : `${API_BASE}/${selectedSupplier.id}`;
+      const url = modalMode === 'add' ? SUPPLIERS_API : `${SUPPLIERS_API}/${selectedSupplier.id}`;
       const method = modalMode === 'add' ? 'POST' : 'PUT';
       
       console.log(`➕ [SUPPLIER] Sending ${method} to ${url}`);

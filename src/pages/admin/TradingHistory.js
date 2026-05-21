@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRightLeft, 
@@ -36,7 +37,7 @@ const TradingHistory = () => {
     totalActive: 0
   });
 
-  const API_URL = 'http://127.0.0.1:8000/api/admin/trading-history';
+  const TRADING_API = `${API_BASE_URL}/api/admin/trading-history`;
 
   useEffect(() => {
     fetchTransactions();
@@ -63,7 +64,7 @@ const TradingHistory = () => {
       if (dateFrom) params.append('dateFrom', dateFrom);
       if (dateTo) params.append('dateTo', dateTo);
 
-      const response = await fetch(`${API_URL}?${params.toString()}`, {
+      const response = await fetch(`${TRADING_API}?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'
@@ -99,7 +100,7 @@ const TradingHistory = () => {
       
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/statistics`, {
+      const response = await fetch(`${TRADING_API}/statistics`, {
         headers: {
           'Authorization': `Bearer ${token.trim()}`,
           'Content-Type': 'application/json'

@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -8,10 +9,11 @@ import {
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
+import DashboardCharts from '../../components/admin/DashboardCharts';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const BASE_URL = 'http://127.0.0.1:8000';
+  
   
   const [loading, setLoading] = useState(true);
   const [userRoles, setUserRoles] = useState([]);
@@ -103,7 +105,7 @@ const AdminDashboard = () => {
           background-color: #f9fafb;
         }
         .dataTables_length {
-          display: flex;
+          display: flex;  
           align-items: center;
           gap: 0.5rem;
         }
@@ -225,14 +227,21 @@ const AdminDashboard = () => {
       };
 
       // Fetch dashboard statistics
-      const statsResponse = await fetch(`${BASE_URL}/api/admin/dashboard/statistics`, { headers });
+      const statsResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/statistics`, { headers });
+      if (statsResponse.status === 401 || statsResponse.status === 403) {
+        // Mirror customer dashboard behavior on auth failure
+        localStorage.removeItem('token');
+        localStorage.removeItem('roles');
+        navigate('/login', { replace: true });
+        return;
+      }
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
       }
 
       // Fetch products
-      const productsResponse = await fetch(`${BASE_URL}/api/products`, { headers });
+      const productsResponse = await fetch(`${API_BASE_URL}/api/products`, { headers });
       const productsData = await productsResponse.json();
       
       // Sort by ID descending to get recent products
@@ -245,7 +254,7 @@ const AdminDashboard = () => {
       // Fetch stock requests only for staff (not admin)
       const isStaff = userRoles.includes('ROLE_STAFF') && !userRoles.includes('ROLE_ADMIN');
       if (isStaff) {
-        const stockReqResponse = await fetch(`${BASE_URL}/api/stock-requests`, { headers });
+        const stockReqResponse = await fetch(`${API_BASE_URL}/api/stock-requests`, { headers });
         const stockReqData = await stockReqResponse.json();
         
         // Sort stock requests by date (most recent first)
@@ -272,7 +281,7 @@ const AdminDashboard = () => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    return `${BASE_URL}${imagePath}`;
+    return `${API_BASE_URL}${imagePath}`;
   };
 
   const getStatusColor = (status) => {
@@ -344,7 +353,7 @@ const AdminDashboard = () => {
               Export
             </button>
             <button
-              onClick={() => navigate('/admin/supplier/stock-request')}
+              onClick={() => navigate('/admin/stock-request')}
               className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-md transition-all duration-200 flex items-center gap-2 font-medium text-sm"
             >
               <Send className="w-4 h-4" strokeWidth={1.5} />
@@ -356,6 +365,8 @@ const AdminDashboard = () => {
 
       {/* Content */}
       <div className="p-6 max-w-[1600px] mx-auto">
+        <DashboardCharts />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard 

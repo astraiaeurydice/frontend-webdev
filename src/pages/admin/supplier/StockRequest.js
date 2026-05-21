@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config/api';
 import React, { useState, useEffect } from "react";
 import { Send, Package, DollarSign, FileText, AlertCircle, CheckCircle, Building2, Users, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -23,7 +24,7 @@ const StockRequest = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const productsRes = await fetch("http://127.0.0.1:8000/api/products", {
+      const productsRes = await fetch(`${API_BASE_URL}/api/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!productsRes.ok) throw new Error(`Products API error: ${productsRes.status}`);
@@ -31,7 +32,7 @@ const StockRequest = () => {
       const productData = await productsRes.json();
       setProducts(Array.isArray(productData) ? productData : []);
 
-      const supplierRes = await fetch("http://127.0.0.1:8000/api/suppliers", {
+      const supplierRes = await fetch(`${API_BASE_URL}/api/suppliers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (supplierRes.ok) {
@@ -120,7 +121,7 @@ const StockRequest = () => {
     if (notes.trim()) body.notes = notes.trim();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/stock-requests", {
+      const response = await fetch(`${API_BASE_URL}/api/stock-requests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

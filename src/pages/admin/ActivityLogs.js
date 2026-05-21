@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import { Search, RefreshCw, Activity, User, Clock, Shield } from 'lucide-react';
 
 export default function ActivityLogs() {
@@ -11,8 +12,7 @@ export default function ActivityLogs() {
     limit: 100
   });
 
-  const API_URL = 'http://localhost:8000';
-  const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || '').trim();
 
   useEffect(() => {
     fetchLogs();
@@ -29,7 +29,7 @@ export default function ActivityLogs() {
       if (filters.username) params.append('username', filters.username);
       params.append('limit', filters.limit);
 
-      const url = `${API_URL}/api/activity-logs?${params}`;
+      const url = `${API_URL}/activity-logs?${params}`;
       console.log('📊 [ACTIVITY LOGS] Request URL:', url);
 
       const response = await fetch(url, {

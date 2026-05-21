@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 
 export default function CustomOrder() {
@@ -11,7 +12,7 @@ export default function CustomOrder() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const API_URL = 'http://localhost:8000'; // Change to your backend URL
+  
   const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function CustomOrder() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/admin/customers`, {
+      const response = await fetch(`${API_URL}/admin/customers`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -40,7 +41,7 @@ export default function CustomOrder() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/admin/products`, {
+      const response = await fetch(`${API_URL}/admin/products`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -58,7 +59,7 @@ export default function CustomOrder() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/admin/custom-orders`, {
+      const response = await fetch(`${API_URL}/admin/custom-orders`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -80,7 +81,7 @@ export default function CustomOrder() {
     setSuccess('');
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/custom-orders`, {
+      const response = await fetch(`${API_URL}/admin/custom-orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

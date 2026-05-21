@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../config/api';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, Menu, X, Building2, 
@@ -50,7 +51,7 @@ const AdminLayout = () => {
       label: 'Stock Request', 
       icon: Send, 
       path: '/admin/stock-request',
-      allowedRoles: ['ROLE_STAFF']
+      allowedRoles: [ 'ROLE_STAFF']
     },
     { 
       id: 'inventory', 
@@ -78,7 +79,7 @@ const AdminLayout = () => {
       label: 'Purchase Records', 
       icon: ShoppingBag, 
       path: '/admin/orders',
-      allowedRoles: ['ROLE_ADMIN']
+      allowedRoles: ['ROLE_ADMIN', 'ROLE_STAFF']
     },
     { 
       id: 'trading', 
@@ -86,13 +87,6 @@ const AdminLayout = () => {
       icon: Activity, 
       path: '/admin/trading',
       allowedRoles: ['ROLE_ADMIN']
-    },
-    { 
-      id: 'analytics', 
-      label: 'Analytics', 
-      icon: BarChart3, 
-      path: '/admin/analytics',
-      allowedRoles: ['ROLE_ADMIN', 'ROLE_STAFF']
     },
     { 
       id: 'userManagement', 
@@ -106,6 +100,14 @@ const AdminLayout = () => {
       label: 'Activity Logs', 
       icon: BarChart3, 
       path: '/admin/ActivityLogs',
+      allowedRoles: ['ROLE_ADMIN']
+    },
+
+    {
+      id: 'StockRequestVerification',
+      label: 'Stock Request Verification',
+      icon: CheckCircle2,
+      path: '/admin/stock-request-verification',
       allowedRoles: ['ROLE_ADMIN']
     }
   ];
@@ -137,19 +139,19 @@ const AdminLayout = () => {
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/user/profile', {
+        const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${(token || '').trim()}`,
             'Content-Type': 'application/json'
           }
         });
 
         if (!response.ok) {
-          if (response.status === 401) {
+          if (response.status === 401 || response.status === 403) {
             localStorage.removeItem('token');
             localStorage.removeItem('roles');
-            navigate('/login');
+            navigate('/login', { replace: true });
             return;
           }
           throw new Error('Failed to fetch user data');
@@ -189,10 +191,10 @@ const AdminLayout = () => {
       
       // Call backend logout endpoint to log the activity
       if (token) {
-        await fetch('http://127.0.0.1:8000/api/logout', {
+        await fetch(`${API_BASE_URL}/api/logout`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${(token || '').trim()}`,
             'Content-Type': 'application/json'
           }
         });
