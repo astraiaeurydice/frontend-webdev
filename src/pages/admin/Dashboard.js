@@ -1,6 +1,6 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
-import { REALTIME_EVENT, isProductEvent, isTradeEvent } from '../../realtime/events';
+import { REALTIME_EVENT, isOrderEvent, isProductEvent, isTradeEvent } from '../../realtime/events';
 import { useNavigate } from 'react-router-dom';
 import { 
   DollarSign, ArrowUp, ArrowDown, ShoppingCart, Package,
@@ -284,7 +284,8 @@ const AdminDashboard = () => {
     const onRealtime = event => {
       const payload = event?.detail;
       const type = payload?.type;
-      if (isProductEvent(type) || isTradeEvent(type) || type === 'stock_request_created') {
+      if (isProductEvent(type) || isTradeEvent(type) || isOrderEvent(type) || type === 'stock_request_created') {
+        console.log('[AdminDashboard] refresh by', type);
         refreshRef.current();
       }
     };

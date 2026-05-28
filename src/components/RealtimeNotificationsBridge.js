@@ -58,7 +58,14 @@ export default function RealtimeNotificationsBridge() {
       ws.onmessage = event => {
         try {
           const message = JSON.parse(String(event.data));
-          if (!message || message.type === 'auth' || message.type === 'ping') {
+          if (!message) {
+            return;
+          }
+          if (message.type === 'auth') {
+            console.log('[WebRealtime] auth:', message.status || 'unknown');
+            return;
+          }
+          if (message.type === 'ping') {
             return;
           }
           console.log('[WebRealtime] message:', message.type);

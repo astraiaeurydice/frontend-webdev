@@ -45,7 +45,11 @@ export default function StockRequestVerification() {
     }
   };
 
-  useRealtimeRefresh(fetchRequests, payload => isProductEvent(payload?.type));
+  useRealtimeRefresh(
+    fetchRequests,
+    payload => isProductEvent(payload?.type),
+    'StockRequestVerification',
+  );
 
   const showAlert = (type, message) => {
     setAlert({ type, message });

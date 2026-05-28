@@ -120,6 +120,7 @@ const PurchaseRecords = () => {
       fetchStatistics();
     },
     payload => isOrderEvent(payload?.type),
+    'PurchaseRecords',
   );
 
   const filterOrders = () => {

@@ -40,7 +40,11 @@ const ProductManagement = () => {
     fetchProducts();
   }, []);
 
-  useRealtimeRefresh(fetchProducts, payload => isProductEvent(payload?.type));
+  useRealtimeRefresh(
+    fetchProducts,
+    payload => isProductEvent(payload?.type),
+    'ProductManagement',
+  );
 
   useEffect(() => {
     if (!loading && products.length > 0 && tableRef.current) {

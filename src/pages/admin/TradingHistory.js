@@ -124,6 +124,7 @@ const TradingHistory = () => {
       fetchStatistics();
     },
     payload => isTradeEvent(payload?.type),
+    'TradingHistory',
   );
 
   const filterTransactions = () => {

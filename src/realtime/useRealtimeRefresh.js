@@ -4,7 +4,7 @@ import { REALTIME_EVENT } from './events';
 /**
  * Subscribe to global realtime events and call `refresh` when `shouldRefresh` matches.
  */
-export default function useRealtimeRefresh(refresh, shouldRefresh) {
+export default function useRealtimeRefresh(refresh, shouldRefresh, label = 'Realtime') {
   const refreshRef = useRef(refresh);
   const predicateRef = useRef(shouldRefresh);
 
@@ -17,6 +17,7 @@ export default function useRealtimeRefresh(refresh, shouldRefresh) {
       if (predicateRef.current?.(payload) !== true) {
         return;
       }
+      console.log(`[${label}] refresh by`, payload?.type || 'unknown');
       refreshRef.current?.();
     };
 

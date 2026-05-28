@@ -116,6 +116,7 @@ const TradeVerification = () => {
     const onRealtime = event => {
       const type = event?.detail?.type;
       if (isTradeEvent(type)) {
+        console.log('[TradeVerification] refresh by', type);
         fetchTransactions();
         fetchStatistics();
       }

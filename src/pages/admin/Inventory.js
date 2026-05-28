@@ -122,6 +122,7 @@ const Inventory = () => {
       fetchStatistics();
     },
     payload => isProductEvent(payload?.type),
+    'Inventory',
   );
 
   const filterProducts = () => {
