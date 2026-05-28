@@ -1,5 +1,5 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { isTradeEvent } from '../../realtime/events';
 import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
@@ -38,6 +38,7 @@ const TradingHistory = () => {
     completedCount: 0,
     totalActive: 0
   });
+  const lastTxSigRef = useRef('');
 
   const TRADING_API = `${API_BASE_URL}/api/admin/trading-history`;
 
@@ -49,6 +50,33 @@ const TradingHistory = () => {
   useEffect(() => {
     filterTransactions();
   }, [transactions, searchTerm]);
+
+  const reconcileTransactions = (prev, next) => {
+    const prevById = new Map(prev.map((row) => [row.id, row]));
+    let changed = prev.length !== next.length;
+
+    const merged = next.map((incoming) => {
+      const existing = prevById.get(incoming.id);
+      if (!existing) {
+        changed = true;
+        return incoming;
+      }
+
+      const same =
+        existing.updatedAt === incoming.updatedAt &&
+        existing.status === incoming.status &&
+        existing.verifiedAt === incoming.verifiedAt &&
+        existing.adminNotes === incoming.adminNotes;
+
+      if (!same) {
+        changed = true;
+        return incoming;
+      }
+      return existing;
+    });
+
+    return changed ? merged : prev;
+  };
 
   const fetchTransactions = async (silent = false) => {
     try {
@@ -90,8 +118,15 @@ const TradingHistory = () => {
       }
 
       const data = await response.json();
-      setTransactions(Array.isArray(data) ? data : []);
-      console.log('[TradingHistory] fetched transactions:', Array.isArray(data) ? data.length : 0);
+      const txData = Array.isArray(data) ? data : [];
+      const signature = txData.map((t) => `${t.id}:${t.updatedAt}:${t.status}`).join('|');
+      if (signature !== lastTxSigRef.current) {
+        setTransactions((prev) => reconcileTransactions(prev, txData));
+        lastTxSigRef.current = signature;
+        console.log('[TradingHistory] fetched transactions:', txData.length, { changed: true });
+      } else {
+        console.log('[TradingHistory] fetched transactions:', txData.length, { changed: false });
+      }
       setError('');
     } catch (err) {
       setError('Error fetching trading history: ' + err.message);

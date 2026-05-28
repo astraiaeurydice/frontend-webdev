@@ -36,6 +36,33 @@ const PurchaseRecords = () => {
   });
   const lastOrdersSigRef = useRef('');
 
+  const reconcileOrders = (prev, next) => {
+    const prevById = new Map(prev.map((row) => [row.id, row]));
+    let changed = prev.length !== next.length;
+
+    const merged = next.map((incoming) => {
+      const existing = prevById.get(incoming.id);
+      if (!existing) {
+        changed = true;
+        return incoming;
+      }
+
+      const same =
+        existing.updatedAt === incoming.updatedAt &&
+        existing.status === incoming.status &&
+        existing.quantity === incoming.quantity &&
+        existing.totalPrice === incoming.totalPrice;
+
+      if (!same) {
+        changed = true;
+        return incoming;
+      }
+      return existing;
+    });
+
+    return changed ? merged : prev;
+  };
+
   const PURCHASE_API = `${API_BASE_URL}/api/admin/purchase-records`;
 
   useEffect(() => {
@@ -90,7 +117,7 @@ const PurchaseRecords = () => {
       const ordersData = Array.isArray(data) ? data : [];
       const signature = ordersData.map((o) => `${o.id}:${o.updatedAt}`).join('|');
       if (signature !== lastOrdersSigRef.current) {
-        setOrders(ordersData);
+        setOrders((prev) => reconcileOrders(prev, ordersData));
         lastOrdersSigRef.current = signature;
         console.log('[PurchaseRecords] fetched orders:', ordersData.length, { changed: true });
       } else {
