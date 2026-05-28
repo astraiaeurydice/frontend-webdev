@@ -1,5 +1,7 @@
-import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
+import { API_URL } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isOrderEvent, isProductEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,19 +19,26 @@ import { TrendingUp, RefreshCw } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
-const ANALYTICS_API = `${API_BASE_URL}/api/admin/analytics`;
+const ANALYTICS_API = `${API_URL}/admin/analytics`;
 
 /** Sales charts shown at the top of the admin dashboard. */
 const DashboardCharts = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [days, setDays] = useState(30);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
+      setError(null);
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        setError('Not signed in. Please log in again.');
+        return;
+      }
 
       const response = await fetch(`${ANALYTICS_API}?days=${days}`, {
         headers: {
@@ -38,19 +47,34 @@ const DashboardCharts = () => {
         },
       });
 
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
-        setAnalytics(await response.json());
+        setAnalytics(data);
+      } else {
+        setError(data.error || `Failed to load charts (${response.status})`);
+        setAnalytics(null);
       }
     } catch (err) {
       console.error('Analytics fetch error:', err);
+      setError('Could not reach the server. Check API URL and network.');
+      setAnalytics(null);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchAnalytics();
   }, [days]);
+
+  useRealtimeRefresh(
+    () => fetchAnalytics(true),
+    payload => isOrderEvent(payload?.type) || isProductEvent(payload?.type),
+    'DashboardCharts',
+    300,
+  );
 
   const chartOptions = {
     responsive: true,
@@ -72,8 +96,28 @@ const DashboardCharts = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-6 text-red-800">
+        <p className="font-semibold">Sales charts could not load</p>
+        <p className="text-sm mt-1">{error}</p>
+        <button
+          type="button"
+          onClick={fetchAnalytics}
+          className="mt-3 px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-sm font-medium"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   if (!analytics?.orders) {
-    return null;
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-6 text-gray-600 text-center">
+        No chart data available.
+      </div>
+    );
   }
 
   const revenueOverTimeData = {

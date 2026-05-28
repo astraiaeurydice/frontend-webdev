@@ -1,5 +1,5 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { isOrderEvent, isProductEvent } from '../../realtime/events';
 import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
@@ -34,6 +34,7 @@ const PurchaseRecords = () => {
     totalQuantity: 0,
     averageOrderValue: 0
   });
+  const lastOrdersSigRef = useRef('');
 
   const PURCHASE_API = `${API_BASE_URL}/api/admin/purchase-records`;
 
@@ -86,8 +87,15 @@ const PurchaseRecords = () => {
       }
 
       const data = await response.json();
-      setOrders(Array.isArray(data) ? data : []);
-      console.log('[PurchaseRecords] fetched orders:', Array.isArray(data) ? data.length : 0);
+      const ordersData = Array.isArray(data) ? data : [];
+      const signature = ordersData.map((o) => `${o.id}:${o.updatedAt}`).join('|');
+      if (signature !== lastOrdersSigRef.current) {
+        setOrders(ordersData);
+        lastOrdersSigRef.current = signature;
+        console.log('[PurchaseRecords] fetched orders:', ordersData.length, { changed: true });
+      } else {
+        console.log('[PurchaseRecords] fetched orders:', ordersData.length, { changed: false });
+      }
       setError('');
     } catch (err) {
       setError('Error fetching purchase records: ' + err.message);
@@ -129,6 +137,7 @@ const PurchaseRecords = () => {
     },
     payload => isOrderEvent(payload?.type) || isProductEvent(payload?.type),
     'PurchaseRecords',
+    500,
   );
 
   const filterOrders = () => {
