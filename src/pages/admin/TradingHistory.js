@@ -87,6 +87,7 @@ const TradingHistory = () => {
 
       const data = await response.json();
       setTransactions(Array.isArray(data) ? data : []);
+      console.log('[TradingHistory] fetched transactions:', Array.isArray(data) ? data.length : 0);
       setError('');
     } catch (err) {
       setError('Error fetching trading history: ' + err.message);
@@ -112,6 +113,7 @@ const TradingHistory = () => {
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+        console.log('[TradingHistory] stats:', data);
       }
     } catch (err) {
       console.error('Error fetching statistics:', err);

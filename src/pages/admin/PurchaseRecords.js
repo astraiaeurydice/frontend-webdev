@@ -1,6 +1,6 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
-import { isOrderEvent } from '../../realtime/events';
+import { isOrderEvent, isProductEvent } from '../../realtime/events';
 import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
   ShoppingBag, 
@@ -83,6 +83,7 @@ const PurchaseRecords = () => {
 
       const data = await response.json();
       setOrders(Array.isArray(data) ? data : []);
+      console.log('[PurchaseRecords] fetched orders:', Array.isArray(data) ? data.length : 0);
       setError('');
     } catch (err) {
       setError('Error fetching purchase records: ' + err.message);
@@ -108,6 +109,7 @@ const PurchaseRecords = () => {
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+        console.log('[PurchaseRecords] stats:', data);
       }
     } catch (err) {
       console.error('Error fetching statistics:', err);
@@ -119,7 +121,7 @@ const PurchaseRecords = () => {
       fetchOrders();
       fetchStatistics();
     },
-    payload => isOrderEvent(payload?.type),
+    payload => isOrderEvent(payload?.type) || isProductEvent(payload?.type),
     'PurchaseRecords',
   );
 

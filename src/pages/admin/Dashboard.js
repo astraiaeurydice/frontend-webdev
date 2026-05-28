@@ -240,11 +240,13 @@ const AdminDashboard = () => {
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
+        console.log('[AdminDashboard] stats:', statsData);
       }
 
       // Fetch products
       const productsResponse = await fetch(`${API_BASE_URL}/api/products`, { headers });
       const productsData = await productsResponse.json();
+      console.log('[AdminDashboard] products fetched:', Array.isArray(productsData) ? productsData.length : 0);
       
       // Sort by ID descending to get recent products
       const sortedProducts = [...productsData].sort((a, b) => b.id - a.id);
@@ -264,6 +266,7 @@ const AdminDashboard = () => {
           new Date(b.requestDate || b.createdAt) - new Date(a.requestDate || a.createdAt)
         );
         setStockRequests(sortedRequests);
+        console.log('[AdminDashboard] stock requests fetched:', sortedRequests.length);
       } else {
         setStockRequests([]);
       }
