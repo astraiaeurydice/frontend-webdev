@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
+import { REALTIME_EVENT, isProductEvent, isTradeEvent } from '../../realtime/events';
 import { ShoppingCart, TrendingUp, Home, User, Search, Heart, Plus, Send, X, MessageSquare, Clock, CheckCircle, XCircle, Package, ArrowRightLeft, LogOut } from 'lucide-react';
 import CartSection from '../../components/customer/CartSection';
 import OrderHistory from '../../components/customer/OrderHistory';
@@ -21,6 +22,8 @@ const UserDashboard = () => {
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [cart, setCart] = useState([]);
+  const refreshProductsRef = useRef(() => {});
+  const refreshTradingRef = useRef(() => {});
 
   
   const getProductImage = (product) => assetUrl(product?.image);
@@ -195,6 +198,23 @@ const UserDashboard = () => {
       setLoading(false);
     }
   };
+
+  refreshProductsRef.current = fetchProducts;
+  refreshTradingRef.current = fetchTradingData;
+
+  useEffect(() => {
+    const onRealtime = event => {
+      const type = event?.detail?.type;
+      if (isProductEvent(type) && currentPage === 'ecommerce') {
+        refreshProductsRef.current();
+      }
+      if (isTradeEvent(type) && currentPage === 'trading') {
+        refreshTradingRef.current();
+      }
+    };
+    window.addEventListener(REALTIME_EVENT, onRealtime);
+    return () => window.removeEventListener(REALTIME_EVENT, onRealtime);
+  }, [currentPage]);
 
   const handleCreateTrade = async (e) => {
     e.preventDefault();

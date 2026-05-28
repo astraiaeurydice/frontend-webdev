@@ -1,10 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { WS_URL } from '../config/api';
 import { emitRealtimeMessage } from '../realtime/events';
 
+function readToken() {
+  return (localStorage.getItem('token') || '').trim();
+}
+
 export default function RealtimeNotificationsBridge() {
+  const [token, setToken] = useState(readToken());
+
   useEffect(() => {
-    const token = (localStorage.getItem('token') || '').trim();
+    const syncToken = () => {
+      const next = readToken();
+      setToken(prev => (prev === next ? prev : next));
+    };
+
+    // same-tab login/logout won't trigger "storage", so poll lightly.
+    const timer = setInterval(syncToken, 1500);
+    window.addEventListener('storage', syncToken);
+    window.addEventListener('focus', syncToken);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('storage', syncToken);
+      window.removeEventListener('focus', syncToken);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!token || !WS_URL) {
       return undefined;
     }
@@ -28,6 +51,7 @@ export default function RealtimeNotificationsBridge() {
 
       ws.onopen = () => {
         retryCount = 0;
+        console.log('[WebRealtime] connected');
         ws?.send(JSON.stringify({ type: 'auth', token }));
       };
 
@@ -37,6 +61,7 @@ export default function RealtimeNotificationsBridge() {
           if (!message || message.type === 'auth' || message.type === 'ping') {
             return;
           }
+          console.log('[WebRealtime] message:', message.type);
           emitRealtimeMessage(message);
         } catch {
           // ignore malformed payloads
@@ -47,6 +72,7 @@ export default function RealtimeNotificationsBridge() {
         if (closedByUnmount) {
           return;
         }
+        console.log('[WebRealtime] disconnected, retrying...');
         const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
         retryCount += 1;
         reconnectTimer = setTimeout(connect, delay);
@@ -60,7 +86,7 @@ export default function RealtimeNotificationsBridge() {
       clearReconnect();
       ws?.close();
     };
-  }, []);
+  }, [token]);
 
   return null;
 }
