@@ -48,14 +48,18 @@ const Inventory = () => {
     filterProducts();
   }, [products, searchTerm, statusFilter, lowStockFilter]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const token = localStorage.getItem('token');
       
       if (!token) {
         setError('No authentication token found');
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -90,7 +94,9 @@ const Inventory = () => {
       setError('Error fetching products: ' + err.message);
       console.error('Fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -118,7 +124,7 @@ const Inventory = () => {
 
   useRealtimeRefresh(
     () => {
-      fetchProducts();
+      fetchProducts(true);
       fetchStatistics();
     },
     payload => isProductEvent(payload?.type),

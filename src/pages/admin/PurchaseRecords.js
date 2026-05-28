@@ -46,14 +46,18 @@ const PurchaseRecords = () => {
     filterOrders();
   }, [orders, searchTerm]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const token = localStorage.getItem('token');
       
       if (!token) {
         setError('No authentication token found');
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -89,7 +93,9 @@ const PurchaseRecords = () => {
       setError('Error fetching purchase records: ' + err.message);
       console.error('Fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -118,7 +124,7 @@ const PurchaseRecords = () => {
 
   useRealtimeRefresh(
     () => {
-      fetchOrders();
+      fetchOrders(true);
       fetchStatistics();
     },
     payload => isOrderEvent(payload?.type) || isProductEvent(payload?.type),

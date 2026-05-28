@@ -24,8 +24,10 @@ export default function StockRequestVerification() {
     fetchRequests();
   }, []);
 
-  const fetchRequests = async () => {
-    setLoading(true);
+  const fetchRequests = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     setError('');
     try {
       const response = await fetch(`${API_BASE_URL}/api/stock-requests`, {
@@ -41,12 +43,14 @@ export default function StockRequestVerification() {
       setError(err.message);
       setRequests([]);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
   useRealtimeRefresh(
-    fetchRequests,
+    () => fetchRequests(true),
     payload => isProductEvent(payload?.type),
     'StockRequestVerification',
   );

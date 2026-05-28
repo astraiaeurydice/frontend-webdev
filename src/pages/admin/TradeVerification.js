@@ -45,14 +45,18 @@ const TradeVerification = () => {
     filterTransactions();
   }, [transactions, statusFilter, searchTerm]);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const token = localStorage.getItem('token');
       
       if (!token) {
         setError('No authentication token found');
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -86,7 +90,9 @@ const TradeVerification = () => {
       setError('Error fetching transactions: ' + err.message);
       console.error('Fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -117,7 +123,7 @@ const TradeVerification = () => {
       const type = event?.detail?.type;
       if (isTradeEvent(type)) {
         console.log('[TradeVerification] refresh by', type);
-        fetchTransactions();
+        fetchTransactions(true);
         fetchStatistics();
       }
     };

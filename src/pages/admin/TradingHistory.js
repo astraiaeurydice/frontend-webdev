@@ -50,14 +50,18 @@ const TradingHistory = () => {
     filterTransactions();
   }, [transactions, searchTerm]);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const token = localStorage.getItem('token');
       
       if (!token) {
         setError('No authentication token found');
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -93,7 +97,9 @@ const TradingHistory = () => {
       setError('Error fetching trading history: ' + err.message);
       console.error('Fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -122,7 +128,7 @@ const TradingHistory = () => {
 
   useRealtimeRefresh(
     () => {
-      fetchTransactions();
+      fetchTransactions(true);
       fetchStatistics();
     },
     payload => isTradeEvent(payload?.type),
