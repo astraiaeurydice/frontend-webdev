@@ -5,6 +5,8 @@ import { Edit, Trash2, Plus, Eye, Package } from 'lucide-react';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
+import { isProductEvent } from '../../../realtime/events';
+import useRealtimeRefresh from '../../../realtime/useRealtimeRefresh';
 
 const ProductManagement = () => {
   const navigate = useNavigate();
@@ -13,32 +15,32 @@ const ProductManagement = () => {
   const tableRef = useRef(null);
   const dataTableRef = useRef(null);
 
-  
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem('token') || '';
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to fetch products: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const token = localStorage.getItem('token') || '';
-        const response = await fetch(`${API_BASE_URL}/api/products`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch products');
-        const data = await response.json();
-        setProducts(data);
-      } catch (err) {
-        console.error(err);
-        alert('Failed to fetch products: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
+
+  useRealtimeRefresh(fetchProducts, payload => isProductEvent(payload?.type));
 
   useEffect(() => {
     if (!loading && products.length > 0 && tableRef.current) {

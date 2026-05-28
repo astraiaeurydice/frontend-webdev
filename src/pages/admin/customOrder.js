@@ -1,5 +1,7 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isOrderEvent, isProductEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 
 export default function CustomOrder() {
   const [customers, setCustomers] = useState([]);
@@ -74,6 +76,14 @@ export default function CustomOrder() {
       setError('Error fetching orders');
     }
   };
+
+  useRealtimeRefresh(
+    () => {
+      fetchProducts();
+      fetchOrders();
+    },
+    payload => isOrderEvent(payload?.type) || isProductEvent(payload?.type),
+  );
 
   const handleSubmit = async () => {
     setLoading(true);

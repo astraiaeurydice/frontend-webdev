@@ -1,5 +1,7 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isOrderEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
   ShoppingBag, 
   Search, 
@@ -111,6 +113,14 @@ const PurchaseRecords = () => {
       console.error('Error fetching statistics:', err);
     }
   };
+
+  useRealtimeRefresh(
+    () => {
+      fetchOrders();
+      fetchStatistics();
+    },
+    payload => isOrderEvent(payload?.type),
+  );
 
   const filterOrders = () => {
     let filtered = [...orders];

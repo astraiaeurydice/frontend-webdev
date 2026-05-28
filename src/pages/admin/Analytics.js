@@ -1,5 +1,7 @@
-import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
+import { API_URL } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isOrderEvent, isProductEvent, isTradeEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -45,7 +47,7 @@ const Analytics = () => {
   const [error, setError] = useState('');
   const [days, setDays] = useState(30);
 
-  const ANALYTICS_API = `${API_BASE_URL}/api/admin/analytics`;
+  const ANALYTICS_API = `${API_URL}/admin/analytics`;
 
   useEffect(() => {
     fetchAnalytics();
@@ -91,6 +93,14 @@ const Analytics = () => {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(
+    fetchAnalytics,
+    payload =>
+      isProductEvent(payload?.type) ||
+      isTradeEvent(payload?.type) ||
+      isOrderEvent(payload?.type),
+  );
 
   const chartOptions = {
     responsive: true,

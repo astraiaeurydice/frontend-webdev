@@ -1,5 +1,6 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
+import { REALTIME_EVENT, isProductEvent, isTradeEvent } from '../../realtime/events';
 import { useNavigate } from 'react-router-dom';
 import { 
   DollarSign, ArrowUp, ArrowDown, ShoppingCart, Package,
@@ -33,6 +34,7 @@ const AdminDashboard = () => {
 
   const tableRef = useRef(null);
   const dataTableRef = useRef(null);
+  const refreshRef = useRef(() => {});
 
   useEffect(() => {
     // Get user roles from localStorage
@@ -275,6 +277,20 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  refreshRef.current = fetchDashboardData;
+
+  useEffect(() => {
+    const onRealtime = event => {
+      const payload = event?.detail;
+      const type = payload?.type;
+      if (isProductEvent(type) || isTradeEvent(type) || type === 'stock_request_created') {
+        refreshRef.current();
+      }
+    };
+    window.addEventListener(REALTIME_EVENT, onRealtime);
+    return () => window.removeEventListener(REALTIME_EVENT, onRealtime);
+  }, []);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;

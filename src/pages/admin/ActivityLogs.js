@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import { Search, RefreshCw, Activity, User, Clock, Shield } from 'lucide-react';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 
 export default function ActivityLogs() {
   const [logs, setLogs] = useState([]);
@@ -56,6 +57,8 @@ export default function ActivityLogs() {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(fetchLogs, payload => Boolean(payload?.type));
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

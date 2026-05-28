@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import { Edit, Trash2, Plus, Users, X, CheckCircle, XCircle, Archive, Mail } from 'lucide-react';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
@@ -38,6 +39,7 @@ export default function UserManagement() {
     { value: 'ROLE_SUPPLIER', label: 'Supplier' },
     { value: 'ROLE_USER', label: 'User (Customer)' }
   ];
+
 
   useEffect(() => {
     fetchUsers();
@@ -260,6 +262,8 @@ export default function UserManagement() {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(fetchUsers, payload => Boolean(payload?.type));
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));

@@ -45,6 +45,7 @@ import EditProduct from "./pages/admin/products/EditProduct";
 import ViewProduct from "./pages/admin/products/ViewProduct";
 
 import Navbar from "./components/Navbar";
+import RealtimeNotificationsBridge from "./components/RealtimeNotificationsBridge";
 
 function AppContent() {
   const location = useLocation();
@@ -55,6 +56,7 @@ function AppContent() {
 
   return (
     <>
+      <RealtimeNotificationsBridge />
       {showNavbar && (
         <>
           <Navbar />

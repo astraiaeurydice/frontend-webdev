@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
+import { isProductEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
   Package, CheckCircle, XCircle, Clock, TrendingUp, AlertCircle,
   Filter, Search, Eye, DollarSign, Calendar, Trash2, RefreshCw
@@ -42,6 +44,8 @@ export default function StockRequestVerification() {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(fetchRequests, payload => isProductEvent(payload?.type));
 
   const showAlert = (type, message) => {
     setAlert({ type, message });

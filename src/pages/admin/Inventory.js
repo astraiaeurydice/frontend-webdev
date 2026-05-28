@@ -1,5 +1,7 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isProductEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
   Package, 
   Plus, 
@@ -113,6 +115,14 @@ const Inventory = () => {
       console.error('Error fetching statistics:', err);
     }
   };
+
+  useRealtimeRefresh(
+    () => {
+      fetchProducts();
+      fetchStatistics();
+    },
+    payload => isProductEvent(payload?.type),
+  );
 
   const filterProducts = () => {
     let filtered = [...products];

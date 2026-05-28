@@ -2,6 +2,8 @@ import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../../config
 import React, { useState, useEffect } from "react";
 import { Send, Package, DollarSign, FileText, AlertCircle, CheckCircle, Building2, Users, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { isProductEvent } from '../../../realtime/events';
+import useRealtimeRefresh from '../../../realtime/useRealtimeRefresh';
 
 const StockRequest = () => {
   const navigate = useNavigate();
@@ -46,6 +48,8 @@ const StockRequest = () => {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(fetchData, payload => isProductEvent(payload?.type));
 
   // ✅ Refetch when navigating back to this page
   useEffect(() => {

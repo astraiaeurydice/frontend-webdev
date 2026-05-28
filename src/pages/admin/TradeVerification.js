@@ -1,5 +1,6 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { REALTIME_EVENT, isTradeEvent } from '../../realtime/events';
 import { 
   CheckCircle, 
   XCircle, 
@@ -110,6 +111,18 @@ const TradeVerification = () => {
       console.error('Error fetching statistics:', err);
     }
   };
+
+  useEffect(() => {
+    const onRealtime = event => {
+      const type = event?.detail?.type;
+      if (isTradeEvent(type)) {
+        fetchTransactions();
+        fetchStatistics();
+      }
+    };
+    window.addEventListener(REALTIME_EVENT, onRealtime);
+    return () => window.removeEventListener(REALTIME_EVENT, onRealtime);
+  }, [statusFilter]);
 
   const filterTransactions = () => {
     let filtered = [...transactions];

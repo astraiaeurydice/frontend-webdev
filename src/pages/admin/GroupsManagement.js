@@ -1,6 +1,8 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, Building2, Calendar, Search } from 'lucide-react';
+import { isProductEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 
 const GroupsManagement = () => {
   const [groups, setGroups] = useState([]);
@@ -54,6 +56,14 @@ const GroupsManagement = () => {
       console.error('Failed to fetch suppliers:', err);
     }
   };
+
+  useRealtimeRefresh(
+    () => {
+      fetchGroups();
+      fetchSuppliers();
+    },
+    payload => isProductEvent(payload?.type),
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();

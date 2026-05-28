@@ -4,6 +4,8 @@ import { Eye, Edit2, Trash2, Plus, X, Building2 } from 'lucide-react';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-dt/css/dataTables.dataTables.css';
+import { isProductEvent } from '../../../realtime/events';
+import useRealtimeRefresh from '../../../realtime/useRealtimeRefresh';
 
 
 
@@ -297,6 +299,8 @@ export default function SupplierManagement() {
       setLoading(false);
     }
   };
+
+  useRealtimeRefresh(fetchSuppliers, payload => isProductEvent(payload?.type));
 
   const handleAdd = () => {
     setModalMode('add');

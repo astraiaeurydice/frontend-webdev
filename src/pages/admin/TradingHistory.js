@@ -1,5 +1,7 @@
 import { API_BASE_URL, API_URL, assetUrl, googleOAuthUrl } from '../../config/api';
 import React, { useState, useEffect } from 'react';
+import { isTradeEvent } from '../../realtime/events';
+import useRealtimeRefresh from '../../realtime/useRealtimeRefresh';
 import { 
   ArrowRightLeft, 
   Search, 
@@ -115,6 +117,14 @@ const TradingHistory = () => {
       console.error('Error fetching statistics:', err);
     }
   };
+
+  useRealtimeRefresh(
+    () => {
+      fetchTransactions();
+      fetchStatistics();
+    },
+    payload => isTradeEvent(payload?.type),
+  );
 
   const filterTransactions = () => {
     let filtered = [...transactions];
